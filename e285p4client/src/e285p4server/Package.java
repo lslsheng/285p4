@@ -19,10 +19,38 @@ public class Package implements Serializable{
 	private static final long serialVersionUID = -530208061360449588L;
 	private Map<String, String> properities = new HashMap<String, String>();
 	private byte[] data;
-	
+	private Torrent torrentT;
+	private ArrayList<Torrent> Tlist;
+	// private class torrent {
+	// 	String fileName;
+	// 	int size;
+	// 	String hashData;
+	// 	torrent(String _filename, int _size, String _hashdata){
+	// 		fileName = _filename;
+	// 		size = _size;
+	// 		hashData = _hashdata;
+	// 	}
+	// }
 	Package(byte[] inData){
 		data = inData;
 	}
+
+	public void setT(Torrent input){
+		torrentT = input;
+	}
+	
+	public torrent getT(){
+		return torrentT;
+	}
+
+	public void setTList(ArrayList<Torrent> input){
+		Tlist = input;
+	}
+	
+	public torrent getTList(){
+		return Tlist;
+	}
+
 	public void setP(String p, String v){
 		properities.put(p, v);
 	}
