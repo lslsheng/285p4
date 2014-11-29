@@ -99,6 +99,7 @@ public class ResponseHandler {
         System.out.println(T.size);
       }
       localServer = new JvodClientFileServer(constData.peerPort,newMap);
+      localServer.start();
     res.setTList(listT);
     return res;
   }
