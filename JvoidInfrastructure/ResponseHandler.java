@@ -123,7 +123,6 @@ public class ResponseHandler {
 		return res;
 	}
 
-
 	void handle(Package res) throws IOException{
 		String opT = res.getP("op");
 		String res_message = res.getP("res_message");
