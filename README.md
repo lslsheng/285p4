@@ -4,7 +4,8 @@ This project is about a peer-to-peer file sharing software. This application can
 Logistics
 =====
 We utilise a generalised messager, called package, to communicate between different services. The structure of package comprises “properities” which is a map can store key value pairs, “data” which is an array of bytes that can be used in data transfer, “torrentT” which is a torrent file, “Tlist” which can be a list of torrent files. For a certain message under a given circumstance, one or more or fields inside a package structure may be used during communications.
-
+The GUI
+===
 The GUI is developed under the standard built-in Windows Builder that has various elements and corresponding listener to evoke certain event any the activities of users.
 
 The master is developed by mocking the standard peer-to-peer protocol that is widely used by marketed p2p sharing software. The procedure can be naturally divided in the 3 parties, a server, a tracker, and a client. When one of the clients want to share a certain file, it makes a torrent that has relevant file information and then send it to server. The server then register the torrent with tracker which do all the bookkeeping of the files to share. If another client want to download a certain file “on” the server, it request information of all the available peers that have the requested file where server get that piece of information from tracker. After the client finishing download the file, it then register itself with the server stating that it become available to transfer the downloaded file to other clients may want to have that file.
