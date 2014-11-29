@@ -23,12 +23,25 @@ public class ResponseHandler {
 	String ip = "";
 	int portNum = 0;
 
+	/**
+     * Ctor for ResponseHandler
+     *
+     * @param input String _filePath
+     * @param input int _portNum
+     */
 	ResponseHandler(String _filePath, int _portNum) throws UnknownHostException{
 		this.filePath = _filePath;
 		this.portNum = _portNum;
 		this.ip = InetAddress.getLocalHost().getHostAddress();
 	}
 
+	/**
+     * Register a file with tracker
+     *
+     * @param input filename to register
+     *
+     * @return a package that has been registered with tracker
+     */
 	Package register(String filename) throws IOException{
 		Package res = new Package(null);
 		int size = (int) new File(filePath + filename).length();
@@ -40,6 +53,11 @@ public class ResponseHandler {
 		return res;
 	}
 
+	/**
+     * Create a torrent from a package
+     *
+     * @param input package to create a torrent
+     */
 	void createTorrentFile (Package P) throws IOException{
 		Torrent tempT = P.getT();
 		FileOutputStream out = new FileOutputStream(filePath + "torrents/" + tempT.fileName + ".torrent");
@@ -47,6 +65,11 @@ public class ResponseHandler {
 		out.close();
 	}
 
+	/**
+     * Decode the torrent file
+     *
+     * @return the package after the decode
+     */
 	Package startProgram() throws IOException{
 		Package res = new Package(null);
 		res.setP("op", "start");
@@ -71,6 +94,11 @@ public class ResponseHandler {
 		return res;
 	}
 
+	/**
+     * Logic after the completion of the program
+     *
+     * @return the package after the ending the program
+     */
 	Package endProgram(){
 		Package res = new Package(null);
 		res.setP("op", "shutDown");
@@ -79,6 +107,13 @@ public class ResponseHandler {
 		return res;
 	}
 
+	/**
+     * Get peers from a input torrent
+     *
+     * @param input torrent to get peers
+     *
+     * @return the package after execution
+     */
 	Package getPeer(Torrent T){
 		Package res = new Package(null);
 		res.setP("op", "getPeer");
