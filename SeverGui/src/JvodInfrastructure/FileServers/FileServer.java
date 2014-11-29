@@ -38,7 +38,7 @@ public class FileServer {
 		}
 		
 	}
-	synchronized void newFile(String filename, String path){
+	public synchronized void newFile(String filename, String path){
 		if(filePath == null){
 			filePath = new ConcurrentHashMap<String, String>();
 		}

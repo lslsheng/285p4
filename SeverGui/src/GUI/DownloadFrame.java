@@ -171,17 +171,6 @@ public class DownloadFrame extends JFrame
           chosenFile = fileChooser.getSelectedFile();
           ThreadDownloadProgram T = new ThreadDownloadProgram(newRH, pc, chosenFile);
           T.start();
-          synchronized(T){
-            try
-            {
-              T.wait();
-            }
-            catch( InterruptedException e1 )
-            {
-              // TODO Auto-generated catch block
-              e1.printStackTrace();
-            }
-          }
           
           fileChooser.setVisible(false);
           
@@ -279,7 +268,7 @@ class ThreadDownloadProgram extends Thread{
       Torrent torrent;
       try
       {
-        torrent = newRH.readTorrentFle(chosenFile.getName());
+        torrent = newRH.readTorrentFle(chosenFile.getAbsolutePath());
         Package P = newRH.getPeer(torrent);
         pc.sendPackage(P);
       }

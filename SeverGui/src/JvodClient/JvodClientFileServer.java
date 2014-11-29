@@ -28,6 +28,9 @@ public class JvodClientFileServer extends Thread{
 		this.fs = new FileServer(filePaths);
 	}
 	
+	public synchronized void newFile(String filename, String filepath){
+		this.fs.newFile(filename, filepath);
+	}
 	public void start(){
 		ps.run();
 	}
