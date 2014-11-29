@@ -13,9 +13,16 @@ import java.nio.file.Paths;
 import java.nio.file.Path;
 
 public class Torrent implements Serializable{
+
 	String fileName;
 	int size;
 	String hashData;
+    /**
+     * Ctor to initialize a new torrent
+     *
+     * @param input filename
+     * @param input size
+     */
 	Torrent(String _filename, int _size) throws IOException{
 		this.fileName = _filename;
 		this.size = _size;
@@ -25,7 +32,13 @@ public class Torrent implements Serializable{
 		System.out.println(data.length);
 	}
 
-
+    /**
+     * Compute MD5 from input bytes
+     *
+     * @param input bytes to compute MD%
+     *
+     * @return the string after MD5 computation
+     */    
 	public static String getMD5(byte[] input) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
