@@ -101,7 +101,7 @@ public class PackageServer {
 					socket.close();
 				} catch (Exception e){
 					e.printStackTrace();
-					System.out.println("Exception should be handled");
+					System.out.println("Package server EXCEPTION");
 				} finally {
 				}
 			}

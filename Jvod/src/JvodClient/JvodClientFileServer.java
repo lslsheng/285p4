@@ -56,7 +56,7 @@ public class JvodClientFileServer extends Thread{
 		// do unit test multiple servers
 		
 		Map<String, String> filePaths = new HashMap<String, String>();
-		filePaths.put("v.mkv", "/Users/wjkcow/Desktop/v.mkv");
+		filePaths.put("v.mp4", "/Users/wjkcow/Desktop/v.mp4");
 		for(int port = 6000; port < 6001; ++port){
 			JvodClientFileServer jcfs = new JvodClientFileServer(port, filePaths);
 			jcfs.start();

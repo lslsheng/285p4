@@ -7,7 +7,11 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import JvodInfrastructure.Datas.Package;
@@ -19,8 +23,9 @@ public class FileWriter {
 	private AtomicInteger size = new AtomicInteger();
 	private String path;
 	private ConcurrentLinkedQueue<Package> requests = new ConcurrentLinkedQueue<Package>();
+	private ConcurrentMap<Integer, Package> unACKs = new ConcurrentHashMap<Integer, Package>();
 	private DiskWriter writerThread;
-	
+	private boolean successful = false;
 	public FileWriter(String filename, int size, String path){
 		this.filename = filename;
 		this.size.set(size);
@@ -31,8 +36,19 @@ public class FileWriter {
 		requests.addAll(requestFactory(filename, size, path));
 	}
 	
+	public boolean successful(){
+		writerThread.kill();
+		try {
+			writerThread.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return successful;
+	}
 	static private List<Package> requestFactory(String filename, int size, String path){
 		Integer offset = 0;
+		Integer id = 0;
 		List<Package> reqs = new ArrayList<Package>();
 		System.out.println("Initing requests for file " + filename);
 		while( offset < size){
@@ -45,7 +61,9 @@ public class FileWriter {
 			req.setP("filename", filename);
 			req.setP("seg_offset", offset.toString());
 			req.setP("seg_length", seg_length.toString());
+			req.setP("req_ID", id.toString());
 			offset = offset + seg_length;
+			id++;
 			reqs.add(req);
 		}
 		System.out.println("Total number of requests needed " + reqs.size());
@@ -62,9 +80,14 @@ public class FileWriter {
 	public Package getRequest(){
 		Package p = requests.poll();
 		if(p != null){
+			Integer id = Integer.parseInt(p.getP("req_ID"));
 			System.out.println("New request polled " + p.getP("filename")
 				+ " offset "+ p.getP("seg_offset") + " length " + p.getP("seg_length"));
-			System.out.println("Request remain " + requests.size());
+			System.out.println("Request ID" + id + "Request remain " + requests.size());
+			unACKs.putIfAbsent(id, p);
+		} else {
+			ConcurrentLinkedQueue<Package> uack_rs = new ConcurrentLinkedQueue<Package>(unACKs.values());
+			p = uack_rs.poll();
 		}
 		return p;
 	}
@@ -78,19 +101,35 @@ public class FileWriter {
 	private class DiskWriter extends Thread{
 		private ConcurrentLinkedQueue<Package> responses = new ConcurrentLinkedQueue<Package>();
 		private AtomicInteger receivedSize = new AtomicInteger();
+		private AtomicBoolean done;
 		byte[] buffer;
 		String path;
+		
 		DiskWriter(String path, int size){
 			this.buffer = new byte[size];
 			this.path = path;
 			this.receivedSize.set(0);
+			this.done = new AtomicBoolean();
+			this.done.set(false);
 		}
 		@Override
 		public void run() {
 			writeBuffer();
-			flush();
+			if(unACKs.isEmpty() && requests.isEmpty()){
+				successful = true;
+				flush();
+			} else {
+				System.err.println("Rquests size" + requests.size() + " unAck size" + unACKs.size());
+			}
+			System.out.println("Disk Writer dies");
 		}		
-		
+		public synchronized void kill(){
+			System.out.println("killing");
+			if(receivedSize.get() < size.get()){
+				done.set(true);
+			}
+			notify();
+		}
 		public synchronized void newPackage(Package p){
 			System.out.println(p);
 			System.out.println("Responses size " + responses.size());
@@ -98,10 +137,10 @@ public class FileWriter {
 			notify();
 		}
 		private synchronized void writeBuffer(){
-			while(receivedSize.get() < size.get()){
-				while(responses.isEmpty()){
+			while(receivedSize.get() < size.get() && !done.get()){
+				while(responses.isEmpty() && !done.get()){
 					try {
-						System.out.println("Writer buffer going to sleep ");
+						System.out.println("Writer buffer going to sleep " + done.get());
 						wait();
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
@@ -109,11 +148,14 @@ public class FileWriter {
 					}
 				}
 				Package p = responses.poll();
-				if(p != null){
+				Integer id = Integer.parseInt(p.getP("req_ID"));
+				if(p != null && unACKs.containsKey(id)){
 					write(p);			
 					System.out.println("Writer Thread working " + receivedSize + "," + size);
 					System.out.println("Response remain " + responses.size());
 				}
+				unACKs.remove(id);
+
 				System.out.println("Buffer write done, isFinish " + receivedSize.equals(size));
 
 			}
@@ -154,10 +196,15 @@ public class FileWriter {
 
 	
 	class FileResponseHandler extends ResponseHandler{
-		public void handle(Package p){
-			System.out.println("Response received " + p.getP("filename")
-					+ " offset "+ p.getP("seg_offset") + " length " + p.getP("seg_length"));
-			writerThread.newPackage(p);
+		public void handle(Package p) throws Exception{
+			if(p != null){
+				System.out.println("Response received " + p.getP("filename")
+						+ " offset "+ p.getP("seg_offset") + " length " + p.getP("seg_length"));
+
+				writerThread.newPackage(p);
+			} else {
+				throw new Exception();
+			}
 		}
 	}
 	
@@ -180,10 +227,20 @@ public class FileWriter {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
+				int errC = 0;
 				Package req;
 				while((req=fw.getRequest()) != null){
 					randomLag();
-					fw.getHandler().handle(fs.handle(req));
+					try {
+						fw.getHandler().handle(fs.handle(req));
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						errC++;
+						e.printStackTrace();
+						if(errC > 3){
+							return;
+						}
+					}
 				}
 			}
 			
@@ -192,7 +249,7 @@ public class FileWriter {
 		
 		
 		static void run(){
-		    File file = new File("/Users/wjkcow/Desktop/t.dmg");
+		    File file = new File("/Users/wjkcow/Desktop/v.mp4");
 		    long length = file.length();
 		    if (length > Integer.MAX_VALUE) {
 		        System.out.println("File is too large.");

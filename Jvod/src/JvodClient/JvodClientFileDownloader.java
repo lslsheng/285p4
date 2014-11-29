@@ -37,8 +37,7 @@ public class JvodClientFileDownloader {
 			}
 		}
 		System.out.println("Download finish");
-	
-		return true;
+		return fw.successful();
 	}
 	
 	
@@ -51,13 +50,23 @@ public class JvodClientFileDownloader {
 		}
 		@Override
 		public void run(){
+			int errC = 0;
 			System.out.println("Run work thread for " + user.ip + " "+ user.port );
 			PackageClient pc = new PackageClient(user.ip, user.port, fw.getHandler());
 			Package p = fw.getRequest();
 			while(p != null){
-				pc.sendPackage(p);
+				try {
+					pc.sendPackage(p);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					errC ++;
+					if(errC > 3){
+						System.out.println("Server should be down, Work thread die");
+						return;
+					}
+					e.printStackTrace();
+				}
 				p = fw.getRequest();
-
 			}
 		}
 		
@@ -68,19 +77,26 @@ public class JvodClientFileDownloader {
 		// do unit test multiple servers
 		Torrent t = null;
 		try {
-			t = new Torrent("t.dmg", 59520083);
+			t = new Torrent("v.mp4", 106694563);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		String writePath = "/Users/wjkcow/Desktop/t1.dmg";
+		String writePath = "/Users/wjkcow/Desktop/v1.mp4";
 		List<User> users = new ArrayList<User>();
-		for(int port = 6000; port < 6001; ++port){
-			User u = new User(port, "127.0.0.1");
-			users.add(u);
-		}
-		
+//		for(int port = 6000; port < 6001; ++port){
+//			User u = new User(port, "127.0.0.1");
+//			users.add(u);
+//		}
+		User u = new User(6000, "35.2.90.166");
+		users.add(u);
+		u = new User(6000, "35.2.100.234");
+		users.add(u);
+		u = new User(6000, "127.0.0.1");
+		users.add(u);
 		JvodClientFileDownloader jcfd = new JvodClientFileDownloader();
-		jcfd.download(t, users, writePath);
+		if(!jcfd.download(t, users, writePath)){
+			System.err.println("Download fail");
+		}
 	}
 }

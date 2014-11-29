@@ -3,7 +3,7 @@ package JvodInfrastructure.Handlers;
 import JvodInfrastructure.Datas.Package;
 
 public class ResponseHandler {
-	public void handle(Package p){
+	public void handle(Package p) throws Exception{
 //		Worker w = new Worker(p);
 //		Thread t = new Thread(w);
 //		t.start();

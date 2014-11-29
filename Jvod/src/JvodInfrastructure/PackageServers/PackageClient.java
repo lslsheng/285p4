@@ -18,7 +18,7 @@ public class PackageClient {
 		this.rh = rh;
 	}
 	
-	public void sendPackage(Package p){
+	public void sendPackage(Package p) throws Exception{
 		System.out.println("Sending package to " + host + " " + port);
 		byte[] bytes = Package.serialize(p);
 		Package res = null;
@@ -44,11 +44,12 @@ public class PackageClient {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.err.println("Req-Res error");
 		}
 		rh.handle(res);
 		
 	}
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		PackageClient pc = new PackageClient("127.0.0.1", 6666, new ResponseHandler());
 		Package p = new Package(null);
 		p.setP("hello", "world");
