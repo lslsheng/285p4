@@ -55,7 +55,7 @@ public class ResponseHandler {
 
   void createTorrentFile (Package P) throws IOException{
     Torrent tempT = P.getT();
-    FileOutputStream out = new FileOutputStream(constData.filePath + "torrents\\" + tempT.hashData + ".torrent");
+    FileOutputStream out = new FileOutputStream(constData.torrentPath + tempT.hashData + ".torrent");
     out.write(Package.serialize(P));
     out.close();
   }
@@ -73,7 +73,7 @@ public class ResponseHandler {
     res.setP("op", "start");
     res.setP("ip", this.ip);
     res.setP("port", constData.peerPort + "");
-    File folder = new File(constData.filePath + "torrents\\");
+    File folder = new File(constData.torrentPath);
     File[] listOfFiles = folder.listFiles();
     ArrayList<Torrent> listT = new ArrayList<Torrent>();
     System.out.println(listOfFiles.length);
@@ -84,12 +84,12 @@ public class ResponseHandler {
           System.out.println(fileName);
           String extension = FilenameUtils.getExtension(fileName);
             if (extension.equals("torrent")){
-              Path path = Paths.get(constData.filePath + "torrents\\" + fileName);
+              Path path = Paths.get(constData.torrentPath + fileName);
               
               byte[] data = Files.readAllBytes(path);
               Package temp = Package.deserialize(data);
               listT.add(temp.getT());
-              newMap.put(fileName, constData.filePath + temp.getT().fileName);
+              newMap.put(temp.getT().fileName, constData.filePath + temp.getT().fileName);
             }
         } 
       }
