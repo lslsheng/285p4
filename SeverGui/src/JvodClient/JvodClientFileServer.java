@@ -12,9 +12,16 @@ import JvodInfrastructure.Handlers.PackageHandler;
 import JvodInfrastructure.PackageServers.PackageServer;
 
 public class JvodClientFileServer extends Thread{
+
 	FileServer fs;
 	PackageServer ps;
 	
+	/**
+     * Ctor for JvodClientFileServer
+     *
+     * @param input port number
+     * @param input map of filenames to their paths
+     */
 	public JvodClientFileServer(int port, Map<String, String> filePaths){
 		
 	    try {
@@ -28,20 +35,40 @@ public class JvodClientFileServer extends Thread{
 		this.fs = new FileServer(filePaths);
 	}
 	
+	/**
+     * add a new file to the fileServer
+     *
+     */
 	public synchronized void newFile(String filename, String filepath){
 		this.fs.newFile(filename, filepath);
 	}
+
+	/**
+     * Run the thread
+     *
+     */
 	public void start(){
 		ps.run();
 	}
 	
 	private class JCFSPackageHandler extends PackageHandler{
+
+		/**
+		* Ctor for JCFSPackageHandler to handler a new package
+		*
+		* @param input package
+		*
+		*/
 		public Package handle(Package p){
 //			randomLag();
 			return fs.handle(p);
 		}
 	}
 	
+	/**
+	* Generate a random lag inside a thread for testing purposes
+	*
+	*/
 	static void randomLag(){
 		Random generator = new Random();
 		int i = generator.nextInt(1000);

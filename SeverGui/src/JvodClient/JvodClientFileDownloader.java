@@ -16,9 +16,16 @@ import JvodInfrastructure.PackageServers.PackageClient;
 public class JvodClientFileDownloader {
 
 	
-	// this method will block the caller thread
-	// return true if successful
+	/**
+     * Download a file from an array of users for torrent t
+     * Writes to a given path
+     *
+	 * @param input torrent
+     * @param input array of avaiable peers to connect
+     * @param input path to download
+     */
 	public boolean download(Torrent t, List<User> users, String writePath){
+		
 		FileWriter fw = new FileWriter(t.fileName, t.size, writePath);
 		List<Worker> workers = new ArrayList<Worker>();
 		System.out.println("Find " + users.size() + " Peers");
@@ -40,11 +47,17 @@ public class JvodClientFileDownloader {
 		System.out.println("Download finish");
 		return fw.successful();
 	}
-	
-	
+
 	private class Worker extends Thread{
 		FileWriter fw;
 		User user;
+
+		/**
+		* Ctor for worker
+		*
+		* @param input user
+		* @param input filewriter
+		*/
 		Worker(User u, FileWriter fw){
 			this.fw = fw;
 			this.user = u;
@@ -54,31 +67,31 @@ public class JvodClientFileDownloader {
 			int errC = 0;
 			System.out.println("Run work thread for " + user.ip + " "+ user.port );
 			PackageClient pc = null;
-      try
-      {
-        pc = new PackageClient(user.ip, user.port, fw.getHandler());
-      }
-      catch( UnknownHostException e1 )
-      {
-        // TODO Auto-generated catch block
-        e1.printStackTrace();
-      }
-			Package p = fw.getRequest();
-			while(p != null){
-				try {
-					pc.sendPackage(p);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					errC ++;
-					if(errC > 3){
-						System.out.println("Server should be down, Work thread die");
-						return;
+		      try
+		      {
+		        pc = new PackageClient(user.ip, user.port, fw.getHandler());
+		      }
+		      catch( UnknownHostException e1 )
+		      {
+		        // TODO Auto-generated catch block
+		        e1.printStackTrace();
+		      }
+				Package p = fw.getRequest();
+				while(p != null){
+					try {
+						pc.sendPackage(p);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						errC ++;
+						if(errC > 3){
+							System.out.println("Server should be down, Work thread die");
+							return;
+						}
+						e.printStackTrace();
 					}
-					e.printStackTrace();
+					p = fw.getRequest();
 				}
-				p = fw.getRequest();
 			}
-		}
 		
 	}
 	
