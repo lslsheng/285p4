@@ -12,12 +12,26 @@ public class PackageClient {
 	private String host;
 	private int port;
 	private ResponseHandler rh;
+
+	/**
+     * Ctor for PackageClient
+     *
+     * @param input host
+     * @param input port
+     * @param input ResponseHandler
+     */
 	public PackageClient(String host, int port, ResponseHandler rh){
 		this.host = host;
 		this.port = port;
 		this.rh = rh;
 	}
 	
+
+	/**
+     * Send a new package over the socket to the remote caller
+     *
+     * @param input package
+     */
 	public void sendPackage(Package p) throws Exception{
 		System.out.println("Sending package to " + host + " " + port);
 		byte[] bytes = Package.serialize(p);

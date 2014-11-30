@@ -15,7 +15,13 @@ public class PackageServer {
     private int port;
     private AtomicBoolean done;
     private PackageHandler ph;
-    
+	
+	/**
+     * Ctor for a new PackageServer
+     *
+     * @param input port
+     * @param input handler to deal with a package
+     */    
     public PackageServer(int port, PackageHandler ph){
     	this.port = port;
     	this.done = new AtomicBoolean();
@@ -23,18 +29,27 @@ public class PackageServer {
     	this.ph = ph;
     }
     
+    /**
+     * Craete a new thread with a new socketAcceptor and run
+	 *
+     */    
     public void run(){
     	SocketAcceptor sl = new SocketAcceptor();
     	Thread t = new Thread(sl);
 		t.start();
     }
     
+    /**
+     * Set a boolean variable indicating the completion
+	 *
+     */
     void done(){
     	this.done.set(true);
     }
     
-    // init server socket, accept new connection and 
-    // get listener thread
+    /**
+     * init server socket, accept new connection and get listener thread
+     */
     class SocketAcceptor implements Runnable{
 		@Override
 		public void run() {
@@ -67,9 +82,19 @@ public class PackageServer {
     class SocketListener implements Runnable{
     	private Socket socket;
     	
+		/**
+		* Ctor for a new SocketListener
+		*
+		* @param input socket
+		*/  
     	SocketListener(Socket socket){
     		this.socket = socket;
     	}
+
+    	/**
+		* A new thread that listens and managing the logic of recieving and writing a new file
+		*
+		*/  
 		@Override
 		public void run() {
 			if(socket == null){
@@ -86,8 +111,7 @@ public class PackageServer {
 				    Package p = Package.deserialize(packageBytes);
 
 				    Package res = ph.handle(p);
-				    // get other 
-				    
+
 					byte[] bytes = Package.serialize(res);
 					DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 					out.writeInt(bytes.length);
@@ -96,8 +120,6 @@ public class PackageServer {
 					out.flush();
 					out.close();
 					in.close();
-
-			    
 					socket.close();
 				} catch (Exception e){
 					e.printStackTrace();
