@@ -37,11 +37,24 @@ public class ResponseHandler {
    
   }
 
+  /**
+  * Ctor for ResponseHandler
+  *
+  * @param input String _filePath
+  * @param input int _portNum
+  */
   public ResponseHandler(String _filePath, int _portNum) throws UnknownHostException{
     this.ip = InetAddress.getLocalHost().getHostAddress();
     this.endOfProgram = false;
   }
 
+  /**
+  * Register a file with tracker
+  *
+  * @param input filename to register
+  *
+  * @return a package that has been registered with tracker
+  */
   public Package register(String filename) throws IOException{
     Package res = new Package(null);
     int size = (int) new File(constData.filePath + filename).length();
@@ -54,6 +67,11 @@ public class ResponseHandler {
     return res;
   }
 
+  /**
+  * Create a torrent from a package
+  *
+  * @param input package to create a torrent
+  */
   void createTorrentFile (Package P) throws IOException{
     Torrent tempT = P.getT();
     FileOutputStream out = new FileOutputStream(constData.torrentPath + tempT.hashData + ".torrent");
@@ -61,6 +79,13 @@ public class ResponseHandler {
     out.close();
   }
   
+  /**
+  * read the torrent file
+  *
+  * @param input filename to the torrent
+  *
+  * @return the torrent
+  */
   public Torrent readTorrentFle (String fileName) throws IOException{
     Path path = Paths.get(fileName);
     byte[] data = Files.readAllBytes(path);
@@ -68,6 +93,11 @@ public class ResponseHandler {
     return tempP.getT();
   }
 
+  /**
+  * Decode the torrent file
+  *
+  * @return the package after the decode
+  */
   public Package startProgram() throws IOException{
     Map<String,String> newMap = new HashMap<String, String>();
     Package res = new Package(null);
@@ -105,6 +135,11 @@ public class ResponseHandler {
     return res;
   }
 
+  /**
+  * Logic after the completion of the program
+  *
+  * @return the package after the ending the program
+  */
   public Package endProgram(){
     Package res = new Package(null);
     res.setP("op", "shutDown");
@@ -113,14 +148,30 @@ public class ResponseHandler {
     return res;
   }
   
+  /**
+  * Check whether the end of program has been reached
+  *
+  * @return a boolean indicating the end of program
+  */ 
   public boolean checkEnd(){
       return endOfProgram;
   }
   
+  /**
+  * Set the boolean when the end of program is reached
+  *
+  */
   private void setEnd(){
     endOfProgram = true;
   }
 
+  /**
+  * Get peers from a input torrent
+  *
+  * @param input torrent to get peers
+  *
+  * @return the package after execution
+  */
   public Package getPeer(Torrent T){
     Package res = new Package(null);
     res.setP("op", "getPeer");
@@ -130,6 +181,12 @@ public class ResponseHandler {
     return res;
   }
 
+  /**
+  * Do the logic based on the operation specified in the input package
+  * For a given opearation either call methods above or doing simlpe logic
+  *
+  * @param input pacakge to be heandled
+  */
   public void handle(Package res) throws Exception{
     String opT = res.getP("op");
     String res_message = res.getP("res_message");
@@ -143,8 +200,6 @@ public class ResponseHandler {
     if (opT.equals("registerTorrent")){
       createTorrentFile(this.orignal);
     } else if (opT.equals("start")){
-      
-
 
     } else if (opT.equals("shutDown")){
         setEnd();
