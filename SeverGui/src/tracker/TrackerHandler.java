@@ -10,9 +10,15 @@ import ServerJDBC.Database;
 
 
 public class TrackerHandler extends PackageHandler {
+
 	public Package res;
 	public Package req;
 	private Database db;
+
+	/**
+     * Ctor for TrackerHandler with empty attributes
+     *
+     */
 	TrackerHandler(){
 		res = new Package(null);
 		db = new Database();
@@ -24,6 +30,14 @@ public class TrackerHandler extends PackageHandler {
     }
 	  //db.disconnect();
 	}
+
+	/**
+     * Route the input package to correspoding handler
+     *
+     * @param input package
+     *
+     * @return output package
+     */
 	public synchronized Package handle(Package p){
 		
 		System.out.println("get package");
@@ -49,6 +63,11 @@ public class TrackerHandler extends PackageHandler {
 		
 		return res;
 	}
+
+	/**
+     * Get available peers for clients to connect
+     *
+     */
 	private void getPeer() {
 		// TODO Auto-generated method stub
 		Torrent rt = req.getT();
@@ -67,6 +86,11 @@ public class TrackerHandler extends PackageHandler {
 		res.setP("res_message", "success");
 		
 	}
+
+	/**
+     * Remove the shutting down client from available peer list
+     *
+     */
 	private void shutDown() {
 		// TODO Auto-generated method stub
 		//delete user
@@ -75,6 +99,11 @@ public class TrackerHandler extends PackageHandler {
 		db.deletepeerinfo(userIp, userPort);
 		res.setP("res_message", "success");
 	}
+
+	/**
+     * Regisiter the client with all its file when its starting
+     *
+     */
 	private void startClient() {
 		// TODO Auto-generated method stub
 		ArrayList<Torrent> tlist = req.getTList();
@@ -91,6 +120,10 @@ public class TrackerHandler extends PackageHandler {
 		res.setP("res_message", "success");
 	}
 	
+	/**
+     * Regisiter a new torrent
+     *
+     */
 	private void register() {
 		// TODO Auto-generated method stub
 		Torrent rt = req.getT();

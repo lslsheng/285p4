@@ -51,8 +51,6 @@ import JvoidInfrastructure.*;
 public class DownloadFrame extends JFrame
 {
 
-  
-
   /**
    * Launch the application.
    */

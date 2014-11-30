@@ -18,11 +18,6 @@ import javax.swing.JTextPane;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 
-
-
-
-
-
 import JvodInfrastructure.Handlers.ResponseHandler;
 import JvodInfrastructure.PackageServers.PackageClient;
 import JvoidInfrastructure.constData;
