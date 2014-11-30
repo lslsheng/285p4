@@ -19,6 +19,7 @@ import JvodInfrastructure.Datas.Package;
 import JvodInfrastructure.Handlers.ResponseHandler;
 
 public class FileWriter {
+
 	private static int SEG_LEN = 1024*1024;
 	private String filename;
 	private AtomicInteger size = new AtomicInteger();
@@ -27,6 +28,14 @@ public class FileWriter {
 	private ConcurrentMap<Integer, Package> unACKs = new ConcurrentHashMap<Integer, Package>();
 	private DiskWriter writerThread;
 	private boolean successful = false;
+
+	/**
+	* Ctor for FileWriter
+	*
+	* @param input filename to write
+	* @param input size of the file
+	* @param input path of the file
+	*/
 	public FileWriter(String filename, int size, String path){
 		this.filename = filename;
 		this.size.set(size);
@@ -37,6 +46,11 @@ public class FileWriter {
 		requests.addAll(requestFactory(filename, size, path));
 	}
 	
+	/**
+	* Kill and join a thread
+	*
+	* @return a boolean indicate a success of join and kill
+	*/
 	public boolean successful(){
 		writerThread.kill();
 		try {
@@ -47,6 +61,16 @@ public class FileWriter {
 		}
 		return successful;
 	}
+
+	/**
+	* Build a request based on input file attributes
+	*
+	* @param input filename 
+	* @param input size of the file
+	* @param input path of the file
+	*
+	* @return the list of package after execution
+	*/
 	static private List<Package> requestFactory(String filename, int size, String path){
 		Integer offset = 0;
 		Integer id = 0;
@@ -71,13 +95,13 @@ public class FileWriter {
 		return reqs;
 	}
 	
-	// get the request for the next part of file
-	// this method should be thread safe
-	// this function will return null if the file is all requested
-	// package_type -> data_request
-	// filename -> <name>
-	// seg_offset -> <offset>
-	// seg_length -> <seg_length>
+	/**
+	* Get the request for the next part of file
+	* This method is thread safe 
+	* Returns null if no more partition is left for a file
+	*
+	* @return the request package
+	*/
 	public Package getRequest(){
 		Package p = requests.poll();
 		if(p != null){
@@ -93,11 +117,14 @@ public class FileWriter {
 		return p;
 	}
 	
-	
+	/**
+	* Get a new ResponseHandler
+	*
+	* @return the new ResponseHandler
+	*/
 	public ResponseHandler getHandler() throws UnknownHostException{		
 		return new FileResponseHandler();
 	}
-	
 	
 	private class DiskWriter extends Thread{
 		private ConcurrentLinkedQueue<Package> responses = new ConcurrentLinkedQueue<Package>();
@@ -106,6 +133,12 @@ public class FileWriter {
 		byte[] buffer;
 		String path;
 		
+		/**
+		* Ctor for DiskWriter
+		*
+		* @param input path of the file
+		* @param input size of the file
+		*/
 		DiskWriter(String path, int size){
 			this.buffer = new byte[size];
 			this.path = path;
@@ -113,6 +146,10 @@ public class FileWriter {
 			this.done = new AtomicBoolean();
 			this.done.set(false);
 		}
+
+		/**
+		* Call writeBuffer() to run
+		*/
 		@Override
 		public void run() {
 			writeBuffer();
@@ -131,12 +168,23 @@ public class FileWriter {
 			}
 			notify();
 		}
+
+		/**
+		* Add a new package
+		*
+		* @param input package 
+		*
+		*/
 		public synchronized void newPackage(Package p){
 			System.out.println(p);
 			System.out.println("Responses size " + responses.size());
 			responses.add(p);
 			notify();
 		}
+
+		/**
+		* Call writeBuffer() to run
+		*/
 		private synchronized void writeBuffer(){
 			while(receivedSize.get() < size.get() && !done.get()){
 				while(responses.isEmpty() && !done.get()){
@@ -163,17 +211,25 @@ public class FileWriter {
 
 		}
 		
-		// write the package for a seg of file
-		// this method should be thread safe
-		// package_type -> data_response
-		// file_writer_id -> 1
-		// 
+
+		/**
+		* write a parition into the file buffer
+		* the package is with type of data_response and file_witer_id=1
+		* this method is thread safe
+		* 
+		* @param input package 
+		*
+		*/
 		private void write(Package p){
 		     int length = Integer.parseInt(p.getP("seg_length"));
 		     int offset = Integer.parseInt(p.getP("seg_offset"));
 		     receivedSize.addAndGet(length);
 		     System.arraycopy(p.getD(), 0, buffer, offset, length);
 		}
+
+		/**
+		* Flush the buffer of file to disk
+		*/
 		private void flush(){
 			System.out.println("going to flush file " + path);
 			FileOutputStream fos;
@@ -200,9 +256,14 @@ public class FileWriter {
 		public FileResponseHandler() throws UnknownHostException
     {
       super();
-      // TODO Auto-generated constructor stub
     }
 
+	/**
+	* Call a writer thread with input package 
+	*
+	* @param input package 
+	*
+	*/
     public void handle(Package p) throws Exception{
 			if(p != null){
 				System.out.println("Response received " + p.getP("filename")

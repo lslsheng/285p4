@@ -15,21 +15,22 @@ import JvodInfrastructure.Datas.Package;
 public class FileServer {
 //	private ConcurrentMap<String, SingleFileServer> serverMap;
 	private ConcurrentMap<String, String> filePath;
-//
-//	synchronized void newFile(String filename, int size, String hash, String path){
-//		if(serverMap == null){
-//			serverMap = new ConcurrentHashMap<String, SingleFileServer>();
-//		}
-//		serverMap.putIfAbsent(filename, new SingleFileServer(path));
-//	}
-	
-//	
-//	synchronized void doneFile(String filename){
-//		serverMap.remove(filename);
-//	}
+
+	/**
+     * Ctor for FileServer with an empty map of filenames to its path
+     *
+     * @param input String _filePath
+     * @param input int _portNum
+     */
 	public FileServer(){
 		filePath = new ConcurrentHashMap<String, String>();
 	}
+
+	/**
+     * Ctor for ResponseHandler with an input map of filenames to its path
+     *
+     * @param input map of filenames to its path
+     */
 	public FileServer (Map<String, String> filePath){
 		this.filePath = new ConcurrentHashMap<String, String>();
 
@@ -38,6 +39,13 @@ public class FileServer {
 		}
 		
 	}
+
+	/**
+     * Register a new file with its path
+     *
+     * @param input filename
+     * @param input the path to the file
+     */
 	public synchronized void newFile(String filename, String path){
 		if(filePath == null){
 			filePath = new ConcurrentHashMap<String, String>();
@@ -45,7 +53,15 @@ public class FileServer {
 		filePath.putIfAbsent(filename, path);
 	}
 	
+	/**
+     * Grab a partition of file demanded by the caller
+     *
+     * @param input package
+     *
+     * @return a package with data of a parition of the file to serve
+     */
 	public synchronized Package handle(Package req){
+
 		String filename = req.getP("filename");
 	    String path = filePath.get(filename);
 	    int length = Integer.parseInt(req.getP("seg_length"));
